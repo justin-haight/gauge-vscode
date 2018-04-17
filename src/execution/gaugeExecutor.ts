@@ -49,36 +49,40 @@ export class GaugeExecutor extends Disposable {
             this.preExecute.forEach((f) => f.call(null, path.relative(config.projectRoot, config.status)));
             this.gaugeDebugger = new GaugeDebugger(this.gaugeWorkspace.getClientLanguageMap(), config);
             this.gaugeDebugger.addDebugEnv().then((env) => {
-                env.GAUGE_HTML_REPORT_THEME_PATH = this._reportThemePath;
-                let args = this.getArgs(spec, config);
-                let chan = new OutputChannel(this.outputChannel,
-                    ['Running tool:', GaugeCommands.Gauge, args.join(' ')].join(' '),
-                    config.projectRoot);
-                let rawout: string;
-                this.childProcess = cp.spawn(GaugeCommands.Gauge, args, { cwd: config.projectRoot, env: env });
-                this.childProcess.stdout.on('data', (chunk) => {
-                    let lineText = chunk.toString();
-                    chan.appendOutBuf(lineText);
-                    rawout = rawout + "\n[stdout]" + lineText;
-                    if (lineText.indexOf(REPORT_PATH_PREFIX) >= 0) {
-                        let reportPath = lineText.replace(REPORT_PATH_PREFIX, "");
-                        this.gaugeWorkspace.setReportPath(reportPath);
-                    }
-                    if (env.DEBUGGING && lineText.indexOf(ATTACH_DEBUGGER_EVENT) >= 0) {
-                        this.gaugeDebugger.startDebugger();
-                    }
-                });
-                this.childProcess.stderr.on('data', (chunk) => {
-                    let lineText = chunk.toString();
-                    rawout = rawout + "\n[stderr]" + lineText;
-                    chan.appendErrBuf(lineText);
-                });
-                this.childProcess.on('exit', (code, signal) => {
-                    this.executing = false;
-                    this.postExecute.forEach((f) => f.call(null, config.projectRoot, signal !== null));
-                    chan.onFinish((s) => resolve({status: s, ouput: rawout}), code, signal !== null);
-                });
-            });
+                try {
+                    env.GAUGE_HTML_REPORT_THEME_PATH = this._reportThemePath;
+                    let args = this.getArgs(spec, config);
+                    let chan = new OutputChannel(this.outputChannel,
+                        ['Running tool:', GaugeCommands.Gauge, args.join(' ')].join(' '),
+                        config.projectRoot);
+                    let rawout: string;
+                    this.childProcess = cp.spawn(GaugeCommands.Gauge, args, { cwd: config.projectRoot, env: env });
+                    this.childProcess.stdout.on('data', (chunk) => {
+                        let lineText = chunk.toString();
+                        chan.appendOutBuf(lineText);
+                        rawout = rawout + "\n[stdout]" + lineText;
+                        if (lineText.indexOf(REPORT_PATH_PREFIX) >= 0) {
+                            let reportPath = lineText.replace(REPORT_PATH_PREFIX, "");
+                            this.gaugeWorkspace.setReportPath(reportPath);
+                        }
+                        if (env.DEBUGGING && lineText.indexOf(ATTACH_DEBUGGER_EVENT) >= 0) {
+                            this.gaugeDebugger.startDebugger();
+                        }
+                    });
+                    this.childProcess.stderr.on('data', (chunk) => {
+                        let lineText = chunk.toString();
+                        rawout = rawout + "\n[stderr]" + lineText;
+                        chan.appendErrBuf(lineText);
+                    });
+                    this.childProcess.on('exit', (code, signal) => {
+                        this.executing = false;
+                        this.postExecute.forEach((f) => f.call(null, config.projectRoot, signal !== null));
+                        chan.onFinish((s) => resolve({status: s, ouput: rawout}), code, signal !== null);
+                    });
+                } catch (error) {
+                    reject(error);
+                }
+            }, reject);
         });
     }
 
