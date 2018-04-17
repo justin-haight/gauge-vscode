@@ -13,28 +13,40 @@ suite('Gauge Execution Tests', () => {
         await commands.executeCommand(GaugeVSCodeCommands.StopExecution);
     });
 
-    test('should execute given specification', async () => {
+    test('should execute given specification', (done) => {
         let spec = path.join(testDataPath, 'specs', 'example.spec');
-        await window.showTextDocument(Uri.file(spec));
-        return commands.executeCommand(GaugeVSCodeCommands.Execute, spec);
+        window.showTextDocument(Uri.file(spec)).then(() => {
+            commands.executeCommand(GaugeVSCodeCommands.Execute, spec).then((result: any) => {
+                assert.ok(result.status, result.rawout);
+            }, (e) => done(e));
+        }, (e) => done(e));
     }).timeout(10000);
 
-    test('should execute given scenario', async () => {
+    test('should execute given scenario', (done) => {
         let spec = Uri.file(path.join(testDataPath, 'specs', 'example.spec'));
-        await window.showTextDocument(spec);
-        let scenario = spec.path + ":6";
-        return commands.executeCommand(GaugeVSCodeCommands.Execute, scenario);
+        window.showTextDocument(spec).then(() => {
+            let scenario = spec.path + ":6";
+            commands.executeCommand(GaugeVSCodeCommands.Execute, scenario).then(() => {
+                commands.executeCommand(GaugeVSCodeCommands.Execute, spec).then((result: any) => {
+                    assert.ok(result.status, result.rawout);
+                }, (e) => done(e));
+            }, (e) => done(e));
+        }, (e) => done(e));
     }).timeout(10000);
 
-    test('should execute all specification in spec dir', async () => {
-        let result: any = await commands.executeCommand(GaugeVSCodeCommands.ExecuteAllSpecs);
-        assert.ok(result.status, result.rawout);
+    test('should execute all specification in spec dir', (done) => {
+        commands.executeCommand(GaugeVSCodeCommands.ExecuteAllSpecs).then((result: any) => {
+            assert.ok(result.status, result.rawout);
+        }, (e) => done(e));
     }).timeout(10000);
 
-    test('should execute currently open specification', async () => {
+    test('should execute currently open specification', (done) => {
         let specFile = Uri.file(path.join(testDataPath, 'specs', 'example.spec'));
-        await window.showTextDocument(specFile);
-        return commands.executeCommand(GaugeVSCodeCommands.ExecuteSpec);
+        window.showTextDocument(specFile).then(() => {
+            commands.executeCommand(GaugeVSCodeCommands.ExecuteSpec).then((result: any) => {
+                assert.ok(result.status, result.rawout);
+            }, (e) => done(e));
+        });
     }).timeout(10000);
 
     test('should execute scenario at cursor', async () => {
