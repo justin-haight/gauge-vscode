@@ -13,7 +13,7 @@ suite('Gauge Execution Tests', () => {
         await commands.executeCommand(GaugeVSCodeCommands.StopExecution);
     });
 
-    test('should execute given specification', (done) => {
+    test.only('should execute given specification', (done) => {
         let spec = path.join(testDataPath, 'specs', 'example.spec');
         window.showTextDocument(Uri.file(spec)).then(() => {
             commands.executeCommand(GaugeVSCodeCommands.Execute, spec).then((result: any) => {
