@@ -41,11 +41,11 @@ export class GaugeExecutor extends Disposable {
 
     public execute(spec: string, config: any): Thenable<any> {
         return new Promise((resolve, reject) => {
-            if (this.executing) {
-                reject(new Error('A Specification or Scenario is still running!'));
-                return;
-            }
-            this.executing = true;
+            // if (this.executing) {
+            //     reject(new Error('A Specification or Scenario is still running!'));
+            //     return;
+            // }
+            // this.executing = true;
             this.preExecute.forEach((f) => f.call(null, path.relative(config.projectRoot, config.status)));
             this.gaugeDebugger = new GaugeDebugger(this.gaugeWorkspace.getClientLanguageMap(), config);
             this.gaugeDebugger.addDebugEnv().then((env) => {

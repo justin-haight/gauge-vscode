@@ -78,7 +78,7 @@ suite('Gauge Execution Tests', () => {
             "Expected one document to have last run report");
     });
 
-    test('should reject execution when another is already in progress', async () => {
+    test.skip('should reject execution when another is already in progress', async () => {
         let spec = path.join(testDataPath, 'specs', 'example.spec');
         await window.showTextDocument(Uri.file(spec));
         commands.executeCommand(GaugeVSCodeCommands.ExecuteAllSpecs);
@@ -88,5 +88,5 @@ suite('Gauge Execution Tests', () => {
         } catch (err) {
             assert.equal(err.message, "A Specification or Scenario is still running!");
         }
-    }).timeout(10000);
+    });
 });
