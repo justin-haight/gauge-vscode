@@ -16,16 +16,14 @@ suite('Gauge Execution Tests', () => {
     test('should execute given specification', async () => {
         let spec = path.join(testDataPath, 'specs', 'example.spec');
         await window.showTextDocument(Uri.file(spec));
-        let result: any = await commands.executeCommand(GaugeVSCodeCommands.Execute, spec);
-        assert.ok(result.status, result.rawout);
+        return commands.executeCommand(GaugeVSCodeCommands.Execute, spec);
     }).timeout(10000);
 
     test('should execute given scenario', async () => {
         let spec = Uri.file(path.join(testDataPath, 'specs', 'example.spec'));
         await window.showTextDocument(spec);
         let scenario = spec.path + ":6";
-        let result: any = await commands.executeCommand(GaugeVSCodeCommands.Execute, scenario);
-        assert.ok(result.status, result.rawout);
+        return commands.executeCommand(GaugeVSCodeCommands.Execute, scenario);
     }).timeout(10000);
 
     test('should execute all specification in spec dir', async () => {
@@ -36,8 +34,7 @@ suite('Gauge Execution Tests', () => {
     test('should execute currently open specification', async () => {
         let specFile = Uri.file(path.join(testDataPath, 'specs', 'example.spec'));
         await window.showTextDocument(specFile);
-        let result: any = await commands.executeCommand(GaugeVSCodeCommands.ExecuteSpec);
-        assert.ok(result.status, result.rawout);
+        return commands.executeCommand(GaugeVSCodeCommands.ExecuteSpec);
     }).timeout(10000);
 
     test('should execute scenario at cursor', async () => {
@@ -46,8 +43,7 @@ suite('Gauge Execution Tests', () => {
         await commands.executeCommand("workbench.action.focusFirstEditorGroup");
         let cm = { to: 'down', by: 'line', value: 8 };
         await commands.executeCommand("cursorMove", cm);
-        let result: any = await commands.executeCommand(GaugeVSCodeCommands.ExecuteScenario);
-        assert.ok(result.status, result.rawout);
+        return commands.executeCommand(GaugeVSCodeCommands.ExecuteScenario);
     }).timeout(10000);
 
     test('should abort execution', async () => {
@@ -62,11 +58,12 @@ suite('Gauge Execution Tests', () => {
     });
 
     test('should open reports inline after execution', async () => {
-        assert.ok(await commands.executeCommand(GaugeVSCodeCommands.ExecuteAllSpecs));
-        let result: any = await commands.executeCommand(GaugeVSCodeCommands.ShowReport);
+        let result: any = await commands.executeCommand(GaugeVSCodeCommands.ExecuteAllSpecs);
+        assert.ok(result.status, result.rawout);
+        await commands.executeCommand(GaugeVSCodeCommands.ShowReport);
         assert.ok(workspace.textDocuments.some((d) =>
             !d.isClosed && d.uri.toString() === REPORT_URI),
-            "Expected one document to have last run report\nRaw out:\n" + result.rawout);
+            "Expected one document to have last run report");
     });
 
     test('should reject execution when another is already in progress', async () => {
